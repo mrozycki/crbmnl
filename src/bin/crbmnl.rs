@@ -14,6 +14,7 @@ use imageproc::rect::Rect;
 use itertools::Itertools;
 use tracing::info;
 use url::Url;
+use uuid::Uuid;
 
 #[derive(Debug, Clone, Copy, serde::Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -51,8 +52,8 @@ async fn setup(req: HttpRequest, config: web::Data<Config>) -> impl Responder {
     HttpResponse::Ok().json(SetupResponse {
         api_key: "Zwy0Sv5zD9XnY-Ug3d7_5g".to_string(),
         friendly_id: "ABC123".to_string(),
-        image_url: config.base_url.join("render.bmp").unwrap(),
-        message: "Dupa".to_string(),
+        image_url: config.base_url.join("hello.bmp").unwrap(),
+        message: "Hello".to_string(),
         status: 200,
     })
 }
@@ -71,12 +72,13 @@ async fn display(req: HttpRequest, config: web::Data<Config>) -> impl Responder 
         battery_voltage,
         req.headers()
     );
+    let image_id = Uuid::new_v4();
     HttpResponse::Ok().json(DisplayResponse {
-        filename: "render.bmp".to_string(),
+        filename: format!("{image_id}.bmp"),
         firmware_url: None,
-        image_url: config.base_url.join("render.bmp").unwrap(),
-        image_url_timeout: 60,
-        refresh_rate: 60,
+        image_url: config.base_url.join(&format!("{image_id}.bmp")).unwrap(),
+        image_url_timeout: 0,
+        refresh_rate: 15 * 60,
         special_function: SpecialFunction::None,
         update_firmware: false,
         reset_firmware: false,
@@ -103,7 +105,7 @@ fn format_date(date: NaiveDate) -> String {
     format!("{} {} {}", date.day(), month, date.year())
 }
 
-#[get("/render.bmp")]
+#[get("/{_}.bmp")]
 async fn render(config: web::Data<Config>) -> impl Responder {
     info!("image requested");
 
