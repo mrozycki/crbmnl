@@ -2,6 +2,7 @@ use url::Url;
 
 #[derive(Clone, Debug, serde::Deserialize)]
 pub struct Config {
+    pub base_url: Url,
     pub timezone: chrono_tz::Tz,
     pub home_assistant: HomeAssistantConfig,
     pub temperature: TemperatureConfig,

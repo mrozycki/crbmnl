@@ -1,4 +1,4 @@
-use std::{iter, str::FromStr};
+use std::iter;
 
 use ab_glyph::FontRef;
 use actix_web::{get, post, web, App, HttpRequest, HttpResponse, HttpServer, Responder};
@@ -45,19 +45,19 @@ struct SetupResponse {
 }
 
 #[get("/api/setup")]
-async fn setup(req: HttpRequest) -> impl Responder {
+async fn setup(req: HttpRequest, config: web::Data<Config>) -> impl Responder {
     info!("setup called: {:?}", req.headers());
     HttpResponse::Ok().json(SetupResponse {
         api_key: "Zwy0Sv5zD9XnY-Ug3d7_5g".to_string(),
         friendly_id: "ABC123".to_string(),
-        image_url: Url::from_str("http://192.168.0.32:8080/static/rover.bmp").unwrap(),
+        image_url: config.base_url.join("render.bmp").unwrap(),
         message: "Dupa".to_string(),
         status: 200,
     })
 }
 
 #[get("/api/display")]
-async fn display(req: HttpRequest) -> impl Responder {
+async fn display(req: HttpRequest, config: web::Data<Config>) -> impl Responder {
     let battery_voltage = req
         .headers()
         .get("battery-voltage")
@@ -73,7 +73,7 @@ async fn display(req: HttpRequest) -> impl Responder {
     HttpResponse::Ok().json(DisplayResponse {
         filename: "render.bmp".to_string(),
         firmware_url: None,
-        image_url: Url::from_str("http://192.168.0.32:8080/render.bmp").unwrap(),
+        image_url: config.base_url.join("render.bmp").unwrap(),
         image_url_timeout: 60,
         refresh_rate: 60,
         special_function: SpecialFunction::None,
