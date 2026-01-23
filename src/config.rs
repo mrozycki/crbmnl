@@ -1,8 +1,16 @@
 use url::Url;
 
+#[derive(clap::Parser)]
+#[command(version, about, long_about = None)]
+pub struct Cli {
+    #[arg(short, long, value_name = "FILE")]
+    pub config: String,
+}
+
 #[derive(Clone, Debug, serde::Deserialize)]
 pub struct Config {
     pub base_url: Url,
+    pub port: u16,
     pub timezone: chrono_tz::Tz,
     pub home_assistant: HomeAssistantConfig,
     pub temperature: TemperatureConfig,

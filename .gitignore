@@ -4,3 +4,4 @@
 
 crbmnl.toml
 *.ics
+.env

@@ -3,9 +3,10 @@ use std::iter;
 use ab_glyph::FontRef;
 use actix_web::{get, post, web, App, HttpRequest, HttpResponse, HttpServer, Responder};
 use chrono::{Datelike, NaiveDate, Timelike, Utc};
+use clap::Parser;
 use crbmnl::{
     calendar::{Calendar, DateMaybeTime},
-    config::Config,
+    config::{Cli, Config},
     temperature::Temperature,
 };
 use image::{GrayImage, Luma};
@@ -289,16 +290,24 @@ async fn any(req: HttpRequest) -> impl Responder {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    let cli = Cli::parse();
+
     let subscriber = tracing_subscriber::FmtSubscriber::new();
     tracing::subscriber::set_global_default(subscriber).unwrap();
 
     let settings = config::Config::builder()
-        .add_source(config::File::with_name("crbmnl"))
+        .add_source(config::File::new(&cli.config, config::FileFormat::Toml))
+        .add_source(
+            config::Environment::with_prefix("CRBMNL")
+                .prefix_separator("__")
+                .separator("__"),
+        )
         .build()
         .expect("failed to load config");
     let config = settings
         .try_deserialize::<crbmnl::config::Config>()
         .expect("failed to deserialize config");
+    let port = config.port;
 
     HttpServer::new(move || {
         App::new()
@@ -309,7 +318,7 @@ async fn main() -> std::io::Result<()> {
             .service(any)
             .service(render)
     })
-    .bind(("0.0.0.0", 8080))?
+    .bind(("0.0.0.0", port))?
     .run()
     .await
 }
