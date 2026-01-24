@@ -166,6 +166,8 @@ async fn render(config: web::Data<Config>) -> impl Responder {
                 let text = if let (DateMaybeTime::DateTime(start), DateMaybeTime::DateTime(end)) =
                     (e.start, e.end)
                 {
+                    let start = start.with_timezone(&config.timezone);
+                    let end = end.with_timezone(&config.timezone);
                     format!(
                         "{}:{:02}-{}:{:02} {}",
                         start.hour(),
